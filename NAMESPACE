@@ -1,0 +1,10 @@
+importFrom(gtools, rdirichlet)
+useDynLib(pwLD)
+importFrom("graphics", "abline", "legend", "lines", "plot")
+importFrom("stats", "optimise", "quantile")
+export( LD.cardano,
+	LD.all,
+	LD.pattern,
+	plotLikelihood,
+	cardano.complex
+)

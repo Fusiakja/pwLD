@@ -1,0 +1,11 @@
+Package: pwLD
+Type: Package
+Title:  Estimation of pairwise haplotype frequencies and linkage disequilibrium measures
+Version: 1.1
+Date: 2008-07-23
+Author: Karsten Krug <karsten_krug@gmx.net>
+Maintainer: Karsten Krug <karsten_krug@gmx.net>
+Depends: gtools, R (>= 3.0.0)
+Description: Estimation of pairwise haplotype frequencies and linkage disequilibrium from unphased genotyped SNP data.
+License: GPL (>= 2)
+
