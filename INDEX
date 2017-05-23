@@ -1,0 +1,8 @@
+HapMap_geno             Sample HapMap data set (r21)
+LD.cardano              Estimation of pairwise linkage disequilibrium
+                        measures
+LD.pattern              Visualisation of LD patterns along chromosomes
+                        or chromosomal regions.
+cardano.complex         Analytic solution of a cubic polynomial
+plotLikelihood          Plot of the log-likelihood function of pairwise
+                        haplotype frequencies

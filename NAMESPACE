@@ -1,10 +1,15 @@
 importFrom(gtools, rdirichlet)
+import(corrplot)
 useDynLib(pwLD)
 importFrom("graphics", "abline", "legend", "lines", "plot")
 importFrom("stats", "optimise", "quantile")
+importFrom("grDevices", "colorRampPalette")
+importFrom("stats", "rmultinom")
 export( LD.cardano,
 	LD.all,
 	LD.pattern,
 	plotLikelihood,
-	cardano.complex
+	cardano.complex,
+	LD.corrplot,
+	LD.snpplot
 )

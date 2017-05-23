@@ -34,7 +34,7 @@ plotLikelihood(snps, code = c(0, 1, 2, 3),
 %   \item{comp2 }{Description of 'comp2'}
 %   ...
 % }
-% \references{ ~put references to the literature/web site here ~ }
+ \references{Further informations and documentation can be found on \href{https://github.com/Fusiakja/pwLD}{github} }
 \author{Karsten Krug <\email{karsten\_krug@gmx.net}>}
 % \note{ ~~further notes~~ 
 % }
@@ -44,7 +44,7 @@ plotLikelihood(snps, code = c(0, 1, 2, 3),
 data(HapMap)
 
 ## plot the log likelihood and add a legend
-plotLikelihood(HapMap_geno[c(45,46),], legend=TRUE)
+##plotLikelihood(HapMap_geno[c(45,46),], legend=TRUE)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

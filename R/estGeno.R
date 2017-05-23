@@ -1,5 +1,5 @@
 `estGeno` <-
-function(snps, code, paradigm="freq", dirich=rep(1,9) )
+function(snps, code, paradigm="freq", dirich=rep(1,9), mc=1000)
 {
 
 	res=.C("estimateGenoFreq", genoA=as.character(snps[1,]), genoB=as.character(snps[2, ]), code=as.character(code), N=as.integer(length(snps[1, ])), paradigm=as.character(paradigm), Dir=as.double(dirich), genoFreq=matrix(0, nrow=4, ncol=4, byrow=T), genoCounts=matrix(0, nrow=4, ncol=4, byrow=T), Neff=as.integer(0), PACKAGE="pwLD" ) 
@@ -16,6 +16,6 @@ function(snps, code, paradigm="freq", dirich=rep(1,9) )
 	out[[4]] <- rownames(snps)
 	names(out) <- c("freq", "count", "N", "SNP")	
 
-	return( out)
+	return(out)
 }
 
