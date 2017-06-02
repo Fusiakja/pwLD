@@ -531,6 +531,15 @@ void estimateFrequencies(double genoFreq[3][3], double haploFreq[3][3], int *Nef
  MAF
  tol	
  LDmatPtr
+ strategy - which CI method
+ ci - computed or not
+ mc - how many MC iterations
+ alpha - significance level
+ clow, cup - lower and upper bounds of CI
+ nSim - number of Bootstrap samples
+ LDdist - out for internal poperperties (e. g. LDs for Bootstrap samples)
+ vars - output for standard error of LDs of CIs
+ intervall - which CI method
  
  */
 void LDall(  char **data, int *nrow, int *ncol, char **LD, int *LDnumb,  char
@@ -639,8 +648,8 @@ void LDall(  char **data, int *nrow, int *ncol, char **LD, int *LDnumb,  char
         {
           int Num=1;
           double vars=1;
-          int intervall=1;
-          confidenceGenoInterval(genoCounts,genoFreq, &N, paradigm, nsim, &LD[k], &Num, tol, digits, Liste, HSweight, alpha, strategy, &cilow[k*Nentries+ countEntries], &ciup[k*Nentries+ countEntries], tabels, Dir, &vars, &intervall);
+          int mc=1;
+          confidenceGenoInterval(genoCounts,genoFreq, &N, paradigm, nsim, &LD[k], &Num, tol, digits, Liste, HSweight, alpha, strategy, &cilow[k*Nentries+ countEntries], &ciup[k*Nentries+ countEntries], tabels, Dir, &vars, intervall, &mc);
           //Rprintf("%d ", Num);
           
           //alleleFreq(genoFreq, allelfreq);
@@ -704,6 +713,8 @@ void LDall(  char **data, int *nrow, int *ncol, char **LD, int *LDnumb,  char
 
 /*#########################################
  
+ NOT USED IN THE CURRENT IMPLEMENTATION
+ 
  generates a bootstrap sample from genotypic frequencies by
  multinomial sampling from 'genoFreq' with sample size 'N'
  
@@ -763,7 +774,7 @@ void bootstrapHapFreq( double genoFreq[3][3], int *N, double genoFreqBS[3][3], c
   genoFreqBS[1][2] = genoFreqBS[1][0]+genoFreqBS[1][1];
   genoFreqBS[2][2] = genoFreqBS[0][2]+genoFreqBS[1][2];
   
-  //estimateFrequencies(genoFreqBS, hapfreq, &Neff,  Dir, &mc, paradigm);
+  //estimateFrequencies(genoFreqBS, hapfreq, &Neff,  Dir, mc, paradigm);
   //Rprintf(" %f", hapfreq[0][0]);
   /* check wether the allele frequencies are valid */
   //alleleFreq(genoFreqBS, af);
@@ -779,7 +790,9 @@ void bootstrapHapFreq( double genoFreq[3][3], int *N, double genoFreqBS[3][3], c
   
 }
 
-/*#####################################################
+/*##################################################### 
+ 
+ NOt used in the currend implementation
  
  - estimation of frequentistic confidence intervals by bootstrapping
  - the function returns the distributions of LD measures over the simulations
@@ -793,13 +806,12 @@ void bootstrapHapFreq( double genoFreq[3][3], int *N, double genoFreqBS[3][3], c
  tol			- epsilon for robust comparison of float values
  LDdist		- vector to store the distributions of the LD measures over the simulations
  */
-void confidenceInterval( double genoCounts[3][3],double genoFreq[3][3], int *N, char **paradigm,int *nSim, char **LD, int *LDnumb, double *tol, int *digits,  double *LDdisti, double *HSweight, double *alpha, char **strategy,  double *cilow, double *ciup, double tables[*nSim][4], double Dir[4], double vars[*LDnumb], int *intervall)
+void confidenceInterval( double genoCounts[3][3],double genoFreq[3][3], int *N, char **paradigm,int *nSim, char **LD, int *LDnumb, double *tol, int *digits,  double *LDdisti, double *HSweight, double *alpha, char **strategy,  double *cilow, double *ciup, double tables[*nSim][4], double Dir[4], double vars[*LDnumb], int *intervall, int *mc)
 {
   int i=0, j=0;
   double genoFreqBS[3][3], haploFreq[3][3]={{0,0,0},{0,0,0},{0,0,0}}; 
   double LDvaluei[*LDnumb];
-  int mc=1000;
-  
+
   
   int sims=*nSim;
   /* initialize the matrix of bootstrapped genotype frequencies*/
@@ -862,7 +874,7 @@ void confidenceInterval( double genoCounts[3][3],double genoFreq[3][3], int *N, 
           for(int j=0;j<*LDnumb;j++)
           {
             
-            estimateFrequencies(genoCounts, haploFreq, &hap_n_minus_one, Dir, &mc, paradigm);
+            estimateFrequencies(genoCounts, haploFreq, &hap_n_minus_one, Dir, mc, paradigm);
             /*estimate LD*/
             estimateLD(haploFreq, &org_Y, &y_num, &Y_2, &zero_weight, &exponent);
             estimateLD(haploFreq, LD, LDnumb, LDvaluei, HSweight, &exponent);
@@ -1280,7 +1292,7 @@ void confidenceInterval( double genoCounts[3][3],double genoFreq[3][3], int *N, 
       /* estimate haplotype frequencies */
       //estimateHaploFreq(genoFreqBS, haploFreq, tol, digits, pooHat);
       
-      estimateFrequencies(genoFreqBS, haploFreq, &hap_N, Dir, &mc, paradigm);
+      estimateFrequencies(genoFreqBS, haploFreq, &hap_N, Dir, mc, paradigm);
       
       /* estimate LD */
       estimateLD(haploFreq, &org_Y, &y_num, &Y_2, &zero_weight, &exponent);
@@ -1636,74 +1648,7 @@ void confidenceInterval( double genoCounts[3][3],double genoFreq[3][3], int *N, 
       }
     }
   }
-  
-  if((strcmp( strategy[0], "zapata") == 0))
-  {
-    double f=0;
-    double D_max=0;
-    double obs_D = genoFreq[0][0]-genoFreq[0][2]*genoFreq[2][0];
-    double Var_D = (genoFreq[0][2]*(1-genoFreq[0][2])*genoFreq[2][0]*(1-genoFreq[2][0])+obs_D*(1-2*genoFreq[0][2])*(1-2*genoFreq[2][0])-(obs_D*obs_D))/(2*(double)*N);
-    if (obs_D < 0) 
-    {
-      D_max = fmin(genoFreq[0][2]*genoFreq[2][0], genoFreq[1][2]*genoFreq[2][1]);
-      
-      if (D_max == genoFreq[0][2]*genoFreq[2][0]) 
-      {
-        f = genoFreq[0][0];
-      }
-      if (D_max == genoFreq[1][2]*genoFreq[2][1]) 
-      {
-        f = genoFreq[1][1];
-      }
-    }
-    if (obs_D > 0) 
-    {
-      D_max = fmin(genoFreq[0][2]*genoFreq[2][1], genoFreq[2][0]*genoFreq[1][2]);
-      if (D_max == genoFreq[0][2]*genoFreq[2][1]) 
-      {
-        f=genoFreq[0][1];
-      }
-      if (D_max == genoFreq[2][0]*genoFreq[1][2]) 
-      {
-        f = genoFreq[1][0];
-      }
-    }
-    
-    double D_prime = obs_D/D_max;
-    double abs_dprime=fabs(D_prime);
-    
-    double Var_Zapata= (1.0 / (2*(double)*N * D_max * D_max)) * ((1.0 - abs_dprime) * (2*(double)*N * Var_D - abs_dprime * D_max * (genoFreq[2][0] * (1.0 - genoFreq[0][2]) + (1.0 - genoFreq[2][0]) * genoFreq[0][2] - 2.0 * fabs(obs_D))) + abs_dprime * f * (1.0 - f));
-    
-    double z=0;
-    
-    if(*alpha==0.1)
-    {
-      z=1.644854;
-    }
-    else{
-      /*double c0[*nSim];
-       for(int o=0; o<*nSim; o++)
-       {
-       GetRNGstate();
-       c0[o]=rnorm(0,1);
-       PutRNGstate();
-       }
-       sort(c0, *nSim);
-       
-       double alpha_l = 1-(*alpha/2);
-       z=quantile(*nSim, c0, alpha_l);*/
-      z=1.644854;
-    }
-    
-    double Dupper = D_prime + z *sqrt(Var_Zapata);
-    double Dlower = D_prime - z *sqrt(Var_Zapata);
-    
-    if(Dlower < -1){Dlower=-1;}
-    if(Dupper > 1){Dupper=1;}
-    
-    *cilow=Dlower;//D_prime - 1.644854*sqrt(Var_Zapata);
-    *ciup=Dupper;
-  }
+ 
   return;
 }
 
@@ -1808,7 +1753,7 @@ void credibleInterval(int genoCounts[3][3], int *nSim, double Dir[4], char **LD,
     
     
     /* estimate haplotype frequencies */
-    //estimateFrequencies(genoFreqRS, haploFreq, &Neff, Dir, &mc, &paradigm);
+    //estimateFrequencies(genoFreqRS, haploFreq, &Neff, Dir, mc, &paradigm);
     
     /* estimate LD */
     double exponent=0;
@@ -1908,6 +1853,9 @@ void credibleInterval(int genoCounts[3][3], int *nSim, double Dir[4], char **LD,
     ciup[j]=ups[(int)max];
   }
 }
+/*
+ * qauntile definition for an array
+ */
 double quantile(int sims,  double LDs[],double alpha)
 {
   double bound = alpha*(sims-1);
@@ -1924,7 +1872,9 @@ double quantile(int sims,  double LDs[],double alpha)
 }
 
 
-
+/*
+ * Sorting alg.
+ */
 void sort( double numbers[], int count)
 {
   for(int i = 0; i < count - 1; i++)
@@ -1948,220 +1898,12 @@ void sort( double numbers[], int count)
     }
   }
 }
-
-
-void MIG(  char **data, int *nrow, int *ncol, char **LD, int *LDnumb,  char
-             **code, char **paradigm, double *Dir, double *MAF, double *tol, int *digits, double *LDmatPtr, double *HSweight, double *ci, int *mc, char **strategy, double *alpha, double *cilow, double *ciup, int *nsim, double *LDdist, double *MIG1, double *MIG2)
-{
-  int i=0, j=0, k=0, m=0, n=0, N=0, countEntries=0, Nentries=(*nrow)*(*nrow-1)/2, haploCountsInt[3][3];
-  char *genoSnp1[*ncol], *genoSnp2[*ncol];
-  double genoFreq[4][4], genoCounts[4][4], haploFreq[3][3], haploCounts[3][3], *LDptr=0, LDvalue[*LDnumb], pooHat[3]; 
-  LDptr = LDvalue;
-  double allelfreq[2];
-  double Liste[*nsim];
-  *LDdist=10;
-  double sn=0;
-  double tables[*nsim][4];
-  double w=0;
-  char res[110];
-  strcpy(res,"");
-  double W[*nrow];
-  double Ws1[*nrow];
-  double Ws2[*nrow];
-  double d =0.95;
-  for(int s=0; s<*nrow; s++)
-  {
-    W[s]=0;
-    Ws1[s]=0;
-    Ws2[s]=0;
-  }
-  for(int s=0; s<*nsim; s++)
-  {
-    Liste[s]=0;
-  }
-  
-  /* loop over all possible marker combinations (the upper triangular matrix) */	
-  for(j=2; j<(*nrow); j++)
-  {	
-    sn=0;
-    for(i=(j-1); i>1; i--)
-    {
-      /* extract two rows of the data matrix, representing the genotypes of two markers*/
-      for(k=0;k<*ncol; k++) 
-      {	genoSnp1[k] = data[i+k*(*nrow)];
-        genoSnp2[k] = data[j+k*(*nrow)];
-      } 
-      
-      /* initialize the matrices of genotype and haplotype frequencies */
-      for(n=0; n<4;n++)
-        for(m=0; m<4; m++)
-        {	
-          genoFreq[n][m] = NA_REAL;
-          genoCounts[n][m] = NA_REAL;
-          
-          if((n < 3) && (m < 3))
-          {	haploFreq[n][m] = NA_REAL;
-            haploCounts[n][m] = NA_REAL;
-          }
-        }
-        //Rprintf("%f ", allelfreq[0]);
-        /* estimate genotypic frequencies*/
-        estimateGenoFreq( genoSnp1, genoSnp2, code, ncol, paradigm,  Dir,  genoFreq, genoCounts, &N);
-      
-      //estimateGenoFreq( data[i], data[j], code, ncol, paradigm,  Dir,  genoFreq, Nptr );
-      
-      for(n=0;n<4;n++)
-      {
-        for(m=0;m<4;m++)
-        {
-          genoFreq[n][m]=genoCounts[n][m]/genoCounts[3][3];
-        }
-      }
-      
-      /* estimate allele frequencies from genotypic
-       frequencies*/
-      //alleleFreq(genoFreq, allelfreq);
-      
-      allelfreq[0]=genoFreq[0][3] + 0.5*genoFreq[1][3];
-      allelfreq[1]=genoFreq[3][0] + 0.5*genoFreq[3][1];
-      
-      /* check wether the allele frequencies are above the MAF
-       threshold */
-      //if( (af[0] > *MAF) && (af[0] < (1-*MAF)) && (af[1] > *MAF) && (af[1] < (1-*MAF)) )	
-      if( (allelfreq[0] > 0.0) && (allelfreq[0] < 1.0) && (allelfreq[1] > 0.0) && (allelfreq[1] < 1.0) )	
-      {
-        
-        /* estimate haplotype frequencies */
-        estimateHaploFreq( genoFreq, haploCounts, tol, digits, pooHat );
-        
-        for(n=0;n<3;n++)
-        {
-          for(m=0;m<3;m++)
-          {
-            haploCounts[n][m]= round(haploCounts[n][m]*2*N);
-            haploCountsInt[n][m]= round(haploCounts[n][m]*2*N);
-          }
-        }
-        
-        int hap_N=2*N;
-        estimateFrequencies(haploCounts, haploFreq, &hap_N, Dir, mc, paradigm);
-        
-        /*estimate LD*/
-        double exponent=0;
-        estimateLD(haploFreq, LD, LDnumb, LDptr, HSweight, &exponent);
-        //Rprintf("%f ", haploFreq[0][0]);
-        
-        /* store the result */
-        for(k=0; k < *LDnumb; k++)
-        { //LDmatPtr[k][countEntries ] = LDvalue[k];	
-          LDmatPtr[ k*Nentries+ countEntries ] = LDvalue[k];
-        }
-        if ((strcmp( *paradigm, "freq") == 0)) 
-        {
-          for(int s=0; s<*nsim; s++)
-          {
-            LDdist[s]=0;
-            //Rprintf("%f ", LDdist[s]);
-          }
-          //Rprintf("%d ", j);
-          //Rprintf("%f ", allelfreq[0]);
-          //alleleFreq(genoFreq, allelfreq);
-          double df= (2*N-1);
-          int intervall=0;
-          confidenceInterval(haploCounts, haploFreq, &N, paradigm, nsim, LD, LDnumb, tol, digits, Liste, HSweight, alpha, strategy, &cilow[countEntries], &ciup[countEntries], tables, Dir, &df, &intervall);
-          //alleleFreq(genoFreq, allelfreq);
-          //Rprintf("%f ", allelfreq[0]);
-          if(ciup[countEntries]<=-1)
-          {
-            ciup[countEntries]=-1;
-          }
-          if(cilow[countEntries]<=-1)
-          {
-            cilow[countEntries]=-1;
-          }
-          if(ciup[countEntries]>=1)
-          {
-            ciup[countEntries]=1;
-          }
-          if(cilow[countEntries]>=1)
-          {
-            cilow[countEntries]=1;
-          }
-          
-          //###############MIG##########################
-          
-          if((ciup[countEntries] >= 0.98 && ciup[countEntries] >= 0.7)|| (ciup[countEntries] <= -0.7 && cilow[countEntries] <= -0.98))
-          {
-            w=1-d;
-          }
-          else if(ciup[countEntries] < 0.9 || cilow[countEntries] > -0.9)
-          {
-            w=-d;
-          }
-          else
-          {
-            w=0;
-          }
-          
-          for(int s=0; s<*nsim; s++)
-          {
-            Liste[s]=0;
-          }
-          
-        }
-        else
-        {
-          for(int s=0; s<*nsim; s++){Liste[s]=0;}
-          credibleInterval(haploCountsInt, nsim, Dir, LD, LDnumb, tol, digits, Liste, HSweight, alpha, &cilow[countEntries], &ciup[countEntries]);
-          for(int s=0; s<*nsim; s++){Liste[s]=0;}
-        }
-        
-      }
-      /* if any allele frequency does not suffice the MAF
-       criteria, the respective LD value is set to 'NA' */
-      else 
-      {	
-        for(k=0; k < *LDnumb; k++) 
-          LDmatPtr[ k*Nentries + countEntries ] = NA_REAL;
-        
-        //LDmatPtr[k][countEntries] =NA_REAL;
-        
-        if(ciup[countEntries]<=-1)
-        {
-          ciup[countEntries]=NA_REAL;
-        }
-        if(cilow[countEntries]<=-1)
-        {
-          cilow[countEntries]=NA_REAL;
-        }
-        
-        w=0;
-      }
-      
-      //MIG[countEntries]=w;
-      sn=sn+w;
-      W[i]=W[i]+sn;
-      
-      
-      if(w==(1-d) && W[i]>=0)
-      {
-        Ws1[i]=i;
-        Ws2[i]=j;
-      }
-      /* increment the number of entries of the upper
-       triangular matrix */
-      countEntries++;
-    }	
-  }
-  
-  for(int k=0; k<*nrow; k++)
-  {
-    //itoa(*nrow* *nrow, res, 10);
-    MIG1[k]=Ws1[k];
-    MIG2[k]=Ws2[k];
-  }
-  
-}
+/*
+ * Construct Bootstrap table from genotype freuqencies
+ * genofreq - genotype frequency table as intput for multinomial sampler
+ * N - sample size
+ * genoFreqBS - Genptype count table; sample table drawn from multinomial sampler
+ */
 
 void bootstrapGenoFreq( double genoFreq[4][4], int *N, double genoFreqBS[4][4], char **paradigm )
 {
@@ -2228,7 +1970,7 @@ void bootstrapGenoFreq( double genoFreq[4][4], int *N, double genoFreqBS[4][4], 
    Rprintf(" %f", genoFreqBS[2][2]);*/
   
   return;
-  //estimateFrequencies(genoFreqBS, hapfreq, &Neff,  Dir, &mc, paradigm);
+  //estimateFrequencies(genoFreqBS, hapfreq, &Neff,  Dir, mc, paradigm);
   //Rprintf(" %f", hapfreq[0][0]);
   /* check wether the allele frequencies are valid */
   alleleFreq(genoFreqBS, af);
@@ -2244,11 +1986,24 @@ void bootstrapGenoFreq( double genoFreq[4][4], int *N, double genoFreqBS[4][4], 
   
 }
 
-void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int *N, char **paradigm,int *nSim, char **LD, int *LDnumb, double *tol, int *digits, double *LDdisti, double *HSweight, double *alpha, char **strategy, double *cilow, double *ciup, double tables[*nSim][9], double Dir[4], double vars[*LDnumb],int *intervall)
+/*  CI construction methods: Bootstrap: quantile, se; Jackknife: pseudo values, leave one out
+ * 
+ * 
+ * strategy - which CI method
+  ci - computed or not
+  mc - how many MC iterations
+  alpha - significance level
+  clow, cup - lower and upper bounds of CI
+  nSim - number of Bootstrap samples
+  LDdist - out for internal poperperties (e. g. LDs for Bootstrap samples)
+    vars - output for standard error of LDs of CIs
+      intervall - which CI method*/
+
+void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int *N, char **paradigm,int *nSim, char **LD, int *LDnumb, double *tol, int *digits, double *LDdisti, double *HSweight, double *alpha, char **strategy, double *cilow, double *ciup, double tables[*nSim][9], double Dir[4], double vars[*LDnumb],int *intervall, int *mc)
 {
+  //set initail conditions
   int i=0, j=0;
   double genoFreqBS[4][4], haploCounts[3][3]={{0,0,0},{0,0,0},{0,0,0}},haploFreq[3][3]={{0,0,0},{0,0,0},{0,0,0}}, LDvaluei[*LDnumb], pooHat[3];
-  int mc=1000;
   double tolerance=*tol;
   int digtials=*digits;
   int sims=*nSim;
@@ -2259,10 +2014,12 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
   
   if((strcmp( strategy[0], "jackknife") == 0))
   {
+
     double observed_LDs[*LDnumb];
-    
+    // set sample size
     int new_hap_N=(2* *N);
     
+    //Calculate genotype frequencies
     for(int k=0; k<4; k++)
     {
       for(int l=0; l<4;l++)
@@ -2270,8 +2027,9 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         genoFreq[k][l]=genoCounts[k][l]/(*N);
       }
     }
-    
+    //estimate Haplotype frequencies with Cardano's method
     estimateHaploFreq(genoFreq, haploFreq,tol, digits, pooHat);
+    // calculate Haplotype frequencies back to Haplotype counts
     for(int k=0; k<3; k++)
     {
       for(int l=0; l<3; l++)
@@ -2279,13 +2037,16 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         haploCounts[k][l]= haploFreq[k][l]*(2 *(*N));
       }
     }
+    //Estimate haplotype frequencies with estimator
     double exponent=0;
-    estimateFrequencies(haploCounts,haploFreq, &new_hap_N, Dir, &mc, paradigm);
+    estimateFrequencies(haploCounts,haploFreq, &new_hap_N, Dir, mc, paradigm);
     estimateLD(haploFreq, LD, LDnumb,observed_LDs, HSweight, &exponent);
     
+    // Jackknife method: leave one observation out
     int jacktimes=0;
     int element=0;
     int tab=0;
+    // for each genotype count table entry
     for(int a=0; a<3; a++)
     {
       for(int b=0; b<3; b++)
@@ -2293,12 +2054,13 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         
         for(int j=0;j<*LDnumb;j++)
         {LDvaluei[j] = 0;}
-        
+        //Only calculate when genocounts > 0
         jacktimes=(int) round(genoCounts[a][b]);
         if((int) round(genoCounts[a][b]) > 0)
         {
-          
+          // substract one observation from population
           genoCounts[a][b]=(int) round(genoCounts[a][b])-1;
+          //Resize table with new population size
           genoCounts[3][0] = genoCounts[0][0]+genoCounts[1][0]+genoCounts[2][0];
           genoCounts[3][1] = genoCounts[0][1]+genoCounts[1][1]+genoCounts[2][1];
           genoCounts[3][2] = genoCounts[0][2]+genoCounts[1][2]+genoCounts[2][2];
@@ -2316,7 +2078,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
           tables[tab][6]=genoCounts[2][0];
           tables[tab][7]=genoCounts[2][1];
           tables[tab][8]=genoCounts[2][2];
-          
+          //Calculation of genotype frequencies
           int N_minus_1=*N-1;
           int hap_n_minus_one=N_minus_1*2;
           for(int k=0; k<4; k++)
@@ -2326,7 +2088,9 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
               genoFreq[k][l]= genoCounts[k][l]/N_minus_1;
             }
           }
+          //calculations of haplotype freuqncies
           estimateHaploFreq(genoFreq,haploFreq,tol,digits,pooHat);
+          //Resize
           for(int k=0; k<3; k++)
           {
             for(int l=0; l<3; l++)
@@ -2337,13 +2101,14 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
           
           for(int j=0;j<*LDnumb;j++)
           {
-            
-            estimateFrequencies(haploCounts, haploFreq, &hap_n_minus_one, Dir, &mc, paradigm);
+            // estimate haplotype freuqenceis with estimator
+            estimateFrequencies(haploCounts, haploFreq, &hap_n_minus_one, Dir, mc, paradigm);
             
             /*estimate LD*/
             double exponent=0;
             estimateLD(haploFreq, LD, LDnumb, LDvaluei, HSweight, &exponent);
           }
+          // store calculated LD values in array
           for(int k=element; k<element+jacktimes; k++)
           {
             for(int f=0; f<*LDnumb; f++)
@@ -2352,6 +2117,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
               //Rprintf(" %f", LDvaluei[f]);
             }
           }
+          // Add the taken out observation
           genoCounts[a][b]=genoCounts[a][b]+1;
           
           genoCounts[3][0] = genoCounts[0][0]+genoCounts[1][0]+genoCounts[2][0];
@@ -2371,60 +2137,57 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
     
     for(int e=0;e<*LDnumb;e++)
     {
+      //Jackknife pseudo values method 
       if(*intervall==0)
       {
+        // for one LD
         double LDs[((*N))];
         for(int h=0; h<(*N); h++)
         {
           LDs[h]=0;
         }
         int intList=0;
+        // pseudo values approach
         for(int g=e*(*N); g<e*(*N)+(*N); g++)
         {
           //LDs[intList]=atanh(LDdisti[g]);// - atanh(observed_LDs[e]));
-          
           if((strcmp( paradigm[0], "freq") == 0))
           {
-            LDs[intList] = (((*N))*observed_LDs[e]) - (((*N-1))*LDdisti[g]);
+            LDs[intList]=((*N)*observed_LDs[e]) - ((*N-1)*LDdisti[g]);
           }
           else
           {
-            LDs[intList] = (((*N))*atanh(observed_LDs[e])) - (((*N-1))*atanh(LDdisti[g]));
+            LDs[intList] = ((*N)*atanh(observed_LDs[e])) - ((*N-1)*atanh(LDdisti[g]));
           }
           //Rprintf ("%f ", LDdisti[g]);
           //Rprintf(" %f", observed_LDs[e]);
           
           intList++;
         }
+        // calculate mean
         double sum_ps=0;
         for(int a=0; a<(*N); a++)
         {
           sum_ps+=LDs[a];
+          
+          
         }
         sum_ps= sum_ps/(*N);
-        //Rprintf(" %f", sum_ps);
         
+        //calculate standard error
         double var_ps=0;
         
         for(int a=0; a<(*N); a++)
         {
           var_ps+=(pow((LDs[a]-sum_ps),2));
         }
-        //Rprintf(" %f", var_ps);
-        
+
         var_ps=sqrt(var_ps*1/(((*N)-1)*((*N))));
-        //double new_ns=(*N);
-        //Rprintf(" %f", new_ns);
-        //double new_ns_min_one=new_ns-1;
-        //double ratio=(new_ns_min_one)/new_ns;
-        //Rprintf(" %f", ratio);
-        //var_ps=sqrt(var_ps*ratio);
-        //Rprintf(" %f", var_ps);
+        
         
         vars[e]=tanh(var_ps);
-        //double Dupper =(sum_ps + 1.96 *sqrt((var_ps)/(*N)));//;
-        //double Dlower =(sum_ps - 1.96 *sqrt((var_ps)/(*N)));//(new_hap_N));
-        
+
+        // Student t quantile
         double stud_t=0;
         double alphafull=1-(*alpha/2);
         double sim_minus_1=(*N)-1;
@@ -2432,10 +2195,8 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         int tail=1;
         //Rf_qt(alphafull,sim_minus_1);
         stud_t= Rf_qt(alphafull, sim_minus_1,tail,logger);
-        
-        //double Dupper=tanh(atanh(observed_LDs[e])+stud_t*var_ps);
-        //double Dlower=tanh(atanh(observed_LDs[e])-stud_t*var_ps);
-        
+
+        //Calculate CI
         long double Dupper=0;
         long double Dlower=0;
         if((strcmp( paradigm[0], "freq") == 0))
@@ -2452,9 +2213,10 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         if(Dlower < -1){Dlower=-1;}
         if(Dupper > 1){Dupper=1;}
         
-        cilow[e]=Dlower;//D_prime - 1.644854*sqrt(Var_Zapata);
+        cilow[e]=Dlower;
         ciup[e]=Dupper;
       }
+      // Jackknife: leave one out method
       else
       {
         double LDs[((*N))];
@@ -2465,10 +2227,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         int intList=0;
         for(int g=e*(*N); g<e*(*N)+(*N); g++)
         {
-          // LDs[intList]=atanh(LDdisti[g]);// - atanh(observed_LDs[e]));
-          //LDs[intList] = (((*N))*atanh(observed_LDs[e])) - (((*N-1))*atanh(LDdisti[g]));
-          //Rprintf ("%f ", LDdisti[g]);
-          //Rprintf(" %f", observed_LDs[e]);
+          // Fischer Transformation
           if((strcmp( paradigm[0], "freq") == 0))
           {
             LDs[intList]=LDdisti[g];
@@ -2479,6 +2238,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
           }
           intList++;
         }
+        // Sum
         double sum_ps=0;
         for(int a=0; a<(*N); a++)
         {
@@ -2488,26 +2248,21 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         //Rprintf(" %f", sum_ps);
         
         double var_ps=0;
-        
+        // standard error
         for(int a=0; a<(*N); a++)
         {
           var_ps+=(pow((LDs[a]-sum_ps),2));
         }
         //Rprintf(" %f", var_ps);
         
-        //var_ps=sqrt(var_ps*1/(((*N)-1)*((*N))));
         double new_ns=(*N);
-        //Rprintf(" %f", new_ns);
         double new_ns_min_one=new_ns-1;
         double ratio=(new_ns_min_one)/new_ns;
-        //Rprintf(" %f", ratio);
         var_ps=sqrt(var_ps*ratio);
-        //Rprintf(" %f", var_ps);
-        
+
         vars[e]=tanh(var_ps);
-        //double Dupper =(sum_ps + 1.96 *sqrt((var_ps)/(*N)));//;
-        //double Dlower =(sum_ps - 1.96 *sqrt((var_ps)/(*N)));//(new_hap_N));
-        
+
+        // calculate quantile        
         double stud_t=0;
         double alphafull=1-(*alpha/2);
         double sim_minus_1=(*N)-1;
@@ -2515,9 +2270,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         int tail=1;
         //Rf_qt(alphafull,sim_minus_1);
         stud_t= Rf_qt(alphafull, sim_minus_1,tail,logger);
-        
-       // double Dupper=tanh(atanh(observed_LDs[e])+stud_t*var_ps);
-      //  double Dlower=tanh(atanh(observed_LDs[e])-stud_t*var_ps);
+        //Calculate CIs
         
         long double Dupper=0;
         long double Dlower=0;
@@ -2541,13 +2294,14 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
     }
     
   }
+  // Bootstrap: quantile, standard error
   int hap_N=2* *N;
   if((strcmp( strategy[0], "bootstrap") == 0))
   {
     double observed_LDs[*LDnumb];
     
     int new_hap_N=(2* *N);
-    
+    //Calc genotype freqs
     for(int k=0; k<4; k++)
     {
       for(int l=0; l<4;l++)
@@ -2555,8 +2309,9 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         genoFreq[k][l]=genoCounts[k][l]/(*N);
       }
     }
-    
+    // est haplo freqs Cardano's method
     estimateHaploFreq(genoFreq, haploFreq,tol, digits, pooHat);
+    // back to haplotype counts
     for(int k=0; k<3; k++)
     {
       for(int l=0; l<3; l++)
@@ -2564,9 +2319,10 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         haploCounts[k][l]= haploFreq[k][l]*(2 *(*N));
       }
     }
-    
-    estimateFrequencies(haploCounts,haploFreq, &new_hap_N, Dir, &mc, paradigm);
+    // est haplo freqs
+    estimateFrequencies(haploCounts,haploFreq, &new_hap_N, Dir, mc, paradigm);
     double exponent=0;
+    //Est LD
     estimateLD(haploFreq, LD, LDnumb,observed_LDs, HSweight, &exponent);
     
     
@@ -2590,7 +2346,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
       bootstrapGenoFreq(genoFreq, N, genoFreqBS, paradigm);
       
       
-      tables[i][0]=genoFreqBS[0][0]*(*N);
+      /*tables[i][0]=genoFreqBS[0][0]*(*N);
       tables[i][1]=genoFreqBS[0][1]*(*N);
       tables[i][2]=genoFreqBS[0][2]*(*N);
       tables[i][3]=genoFreqBS[1][0]*(*N);
@@ -2598,13 +2354,13 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
       tables[i][5]=genoFreqBS[1][2]*(*N);
       tables[i][6]=genoFreqBS[2][0]*(*N);
       tables[i][7]=genoFreqBS[2][1]*(*N);
-      tables[i][8]=genoFreqBS[2][2]*(*N);
+      tables[i][8]=genoFreqBS[2][2]*(*N);*/
       /* estimate haplotype frequencies */
       *tol=tolerance;
       *digits=digtials;
-      pooHat[0]=0;
+      /*pooHat[0]=0;
       pooHat[1]=0;
-      pooHat[2]=0;
+      pooHat[2]=0;*/
       estimateHaploFreq(genoFreqBS, haploCounts, tol, digits, pooHat);
       for(int a=0;a<3;a++)
       {
@@ -2615,7 +2371,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
       }
       
       //Rprintf(" %f", haploCounts[2][2]);
-      estimateFrequencies(haploCounts, haploFreq, &hap_N, Dir, &mc, paradigm);
+      estimateFrequencies(haploCounts, haploFreq, &hap_N, Dir, mc, paradigm);
       
       /* estimate LD */
       double exponent=0;
@@ -2630,6 +2386,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
     //Rprintf ("%d ", hap_N);
     for(int e=0;e<*LDnumb;e++)
     {
+      // construct quantile
       if(*intervall==0)
       {
         double LDs[*nSim];
@@ -2660,6 +2417,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         cilow[e]=tolle;
         ciup[e]=digi;
       }
+      // standard error method
       else
       {
         double LDs[(*nSim)];
@@ -2668,12 +2426,11 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         {
           LDs[h]=0;
         }
-        
+        // Fischer Tranformation
         int intList=0;
         for(int g=e*(*nSim); g<e*(*nSim)+(*nSim); g++)
         {
-          //LDs[intList] = (LDdisti[g]);
-          //Rprintf ("%f ", LDdisti[g]);
+
           if((strcmp( paradigm[0], "freq") == 0))
           {
             LDs[intList]=LDdisti[g];
@@ -2684,7 +2441,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
           }
           intList++;
         }
-        //mean_ld=atanh(mean_ld/(2* *N));
+        //Mean
         double sum_ps=0;
         for(int a=0; a<*nSim; a++)
         {
@@ -2694,7 +2451,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         //Rprintf ("%f ", sum_ps);
         
         double var_ps=0;
-        
+        // Standard error
         for(int a=0; a<*nSim; a++)
         {
           var_ps+=(pow((LDs[a]-sum_ps),2))/(*nSim-1);
@@ -2704,7 +2461,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         vars[e]=var_ps;
         //var_ps=sqrt(var_ps*(new_hap_N-1)/(new_hap_N));
         
-        //var_ps=1/sqrt(2*(*N)-3);
+        //quantile
         double stud_t=0;
         double alphafull=1-(*alpha/2);
         double sim_minus_1=*N-1;
@@ -2716,6 +2473,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
         //double Dupper=  observed_LDs[e] + stud_t * sqrt((var_ps));
         //double Dlower = observed_LDs[e] - stud_t * sqrt((var_ps));
         
+        // CI construction
         long double Dupper=0;
         long double Dlower=0;
         if((strcmp( paradigm[0], "freq") == 0))
@@ -2740,74 +2498,7 @@ void confidenceGenoInterval( double genoCounts[4][4],double genoFreq[4][4], int 
       }
     }
   }
-  
-  if((strcmp( strategy[0], "zapata") == 0))
-  {
-    double f=0;
-    double D_max=0;
-    double obs_D = genoFreq[0][0]-genoFreq[0][2]*genoFreq[2][0];
-    double Var_D = (genoFreq[0][2]*(1-genoFreq[0][2])*genoFreq[2][0]*(1-genoFreq[2][0])+obs_D*(1-2*genoFreq[0][2])*(1-2*genoFreq[2][0])-(obs_D*obs_D))/(2*(double)*N);
-    if (obs_D < 0) 
-    {
-      D_max = fmin(genoFreq[0][2]*genoFreq[2][0], genoFreq[1][2]*genoFreq[2][1]);
-      
-      if (D_max == genoFreq[0][2]*genoFreq[2][0]) 
-      {
-        f = genoFreq[0][0];
-      }
-      if (D_max == genoFreq[1][2]*genoFreq[2][1]) 
-      {
-        f = genoFreq[1][1];
-      }
-    }
-    if (obs_D > 0) 
-    {
-      D_max = fmin(genoFreq[0][2]*genoFreq[2][1], genoFreq[2][0]*genoFreq[1][2]);
-      if (D_max == genoFreq[0][2]*genoFreq[2][1]) 
-      {
-        f=genoFreq[0][1];
-      }
-      if (D_max == genoFreq[2][0]*genoFreq[1][2]) 
-      {
-        f = genoFreq[1][0];
-      }
-    }
-    
-    double D_prime = obs_D/D_max;
-    double abs_dprime=fabs(D_prime);
-    
-    double Var_Zapata= (1.0 / (2*(double)*N * D_max * D_max)) * ((1.0 - abs_dprime) * (2*(double)*N * Var_D - abs_dprime * D_max * (genoFreq[2][0] * (1.0 - genoFreq[0][2]) + (1.0 - genoFreq[2][0]) * genoFreq[0][2] - 2.0 * fabs(obs_D))) + abs_dprime * f * (1.0 - f));
-    
-    double z=0;
-    
-    if(*alpha==0.1)
-    {
-      z=1.644854;
-    }
-    else{
-      /*double c0[*nSim];
-       for(int o=0; o<*nSim; o++)
-       {
-       GetRNGstate();
-       c0[o]=rnorm(0,1);
-       PutRNGstate();
-       }
-       sort(c0, *nSim);
-       
-       double alpha_l = 1-(*alpha/2);
-       z=quantile(*nSim, c0, alpha_l);*/
-      z=1.644854;
-    }
-    
-    double Dupper = D_prime + z *sqrt(Var_Zapata);
-    double Dlower = D_prime - z *sqrt(Var_Zapata);
-    
-    if(Dlower < -1){Dlower=-1;}
-    if(Dupper > 1){Dupper=1;}
-    
-    *cilow=Dlower;//D_prime - 1.644854*sqrt(Var_Zapata);
-    *ciup=Dupper;
-  }
+
   return;
 }
 

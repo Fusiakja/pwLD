@@ -9,31 +9,34 @@ Graphical output of a scatterplot consists of the LD measures between all genoty
 \usage{
 LD.snpplot(valuematrix, annotation, values = c("values", "upperCI", "lowerCI"),
 LD = c("D", "Dprime", "Q", "r", "OR", "MI", "chi2", "Y", "HS"), 
-snp.zoom = FALSE, snp.target, snp.region, unit = c("Mb", "Kb", "bp"))
+snp.zoom = FALSE, snp.target, snp.region, unit = c("Mb", "Kb", "bp"), legends=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{valuematrix}{
-output of the \code{LD.all} command - 
+object, output of the \code{LD.all} command - 
 symmatric matrix of the LD measure between all genotyped SNPs.}
   \item{annotation}{
-numeric vector containing the genomic positions of SNPs.}
+object, numeric vector containing the genomic positions of SNPs.}
   \item{values}{
-Parameter to define wich values shoul be plotted.
+character, Parameter to define wich values shoul be plotted.
 If \code{values} is \code{"values"} the LD values are taken for the plotting.
 If \code{values} is \code{"upperCI"} the upper bounds of the confidence interval estimation are taken for the plotting.
 If \code{values} is \code{"lowerCI"} the lower bounds of the confidence interval estimation are taken for the plotting.}
   \item{LD}{
-Defines which LD measure will be plotted. One of the following values is possible: \code{Dprime}, \code{r}, \code{Q}, \code{Y}, \code{HS} }
+character, Defines which LD measure will be plotted. One of the following values is possible: \code{Dprime}, \code{r}, \code{Q}, \code{Y}, \code{HS} }
   \item{snp.zoom}{
 logical, if \code{FALSE} all data will be plotted
 if \code{TRUE} only part of the data will be plotted}
   \item{snp.target}{
-Definition of the SNP, that is wanted to be investigated, e.g. "rs16984366"}
+character, definition of the SNP, that is wanted to be investigated, e.g. "rs16984366"}
   \item{snp.region}{
-Definition of the region of the SNP, that is wanted to be investigated, e.g. 5 SNPs before and after the "rs16984366" SNP}
+integer, definition of the region of the SNP, that is wanted to be investigated, e.g. 5 SNPs before and after the "rs16984366" SNP}
   \item{unit}{
-character indicating the scale used for the plot. One of the following values is possible: \code{Mb}, \code{Kb}, \code{bp}.}
+character, indicating the scale used for the plot. One of the following values is possible: \code{Mb}, \code{Kb}, \code{bp}.}
+  \item{legends}{
+  logical, show legend? \code{TRUE} Yes. \code{FALSE} No.
+  }
 }
 %%\details{
 %%  ~~ If necessary, more details than the description above ~~
@@ -62,7 +65,7 @@ data(HapMap)
 res.all <- LD.all(data = HapMap_geno, code = c(0, 1, 2, 3), 
 LD = c("Dprime", "Q", "r", "OR", "Y", "HS"), MAF = 0.1, paradigm = c("freq"), 
 strategy = c("jackknife"), verbose = TRUE, tol = .Machine$double.eps^0.6, 
-digits = 12, CI = TRUE, HSweight = 4, alpha = 0.05, inervall = 0)
+digits = 12, CI = TRUE, HSweight = 4, alpha = 0.05, intervall = 0)
 
 ## Plotting scatterplot for D' without zoom
 LD.snpplot(valuematrix =  res.all, annotation = HapMap_anno, 

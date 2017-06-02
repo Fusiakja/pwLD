@@ -18,9 +18,9 @@ void bootstrapHapFreq(  double genoFreq[3][3], int *N,  double genoFreqBS[3][3],
 
 void bootstrapGenoFreq(  double genoFreq[4][4], int *N,  double genoFreqBS[4][4], char **paradigm );
 
-void confidenceInterval(  double genoCounts[3][3], double genoFreq[3][3], int *N, char **paradigm,int *nSim, char **LD, int *LDnumb,  double *tol, int *digits,   double *LDdist,  double *HSweight,  double *alpha, char **strategy,   double *cilow,   double *ciup,  double tables[*nSim][4],  double Dir[4],   double vars[*LDnumb],int *intervall);
+void confidenceInterval(  double genoCounts[3][3], double genoFreq[3][3], int *N, char **paradigm,int *nSim, char **LD, int *LDnumb,  double *tol, int *digits,   double *LDdist,  double *HSweight,  double *alpha, char **strategy,   double *cilow,   double *ciup,  double tables[*nSim][4],  double Dir[4],   double vars[*LDnumb],int *intervall, int *mc);
 
-void confidenceGenoInterval(  double genoCounts[4][4], double genoFreq[4][4], int *N, char **paradigm,int *nSim, char **LD, int *LDnumb,  double *tol, int *digits,  double *LDdisti,  double *HSweight,  double *alpha, char **strategy,  double *cilow,  double *ciup,  double tables[*nSim][9],  double Dir[4],  double vars[*LDnumb],int *intervall);
+void confidenceGenoInterval(  double genoCounts[4][4], double genoFreq[4][4], int *N, char **paradigm,int *nSim, char **LD, int *LDnumb,  double *tol, int *digits,  double *LDdisti,  double *HSweight,  double *alpha, char **strategy,  double *cilow,  double *ciup,  double tables[*nSim][9],  double Dir[4],  double vars[*LDnumb],int *intervall, int *mc);
 
 void credibleInterval(int genoCounts[3][3], int *nSim,  double Dir[4], char **LD, int *LDnumb,  double *tol, int *digits,  double *LDdist,  double *HSweight,  double *alpha,  double *cilow,  double *ciup);
 

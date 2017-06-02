@@ -10,9 +10,9 @@ Estimation of pairwise haplotype frequencies and linkage disequilibrium measures
 LD.all(data, code = c(0, 1, 2, 3), 
 LD = c("D", "Dprime", "Q", "r", "OR", "MI", "chi2", "Y", "HS"), MAF = 0, 
 paradigm = c("freq", "bayes", "fullbayes"), 
-strategy = c("bootstrap", "jackknife", "zapata"), dirich = rep(1, 4), 
+strategy = c("bootstrap", "jackknife"), dirich = rep(1, 4), 
 verbose = T, tol = .Machine$double.eps^0.6, digits = 12, 
-CI = F, HSweight = 4, alpha = 0.2, nSim = 1000, seed = F, inervall = c(0, 1))
+CI = F, HSweight = 4, alpha = 0.2, nSim = 1000, seed = F, intervall = c(0, 1), mc=1000)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -43,11 +43,14 @@ numeric, parameter n of the HS measure for up-and downweighting}
   \item{alpha}{
 numerical, confidence level of confidence or credible interval, respectively.}
   \item{nSim}{
-numerical indicating the number of bootstrap or Dirichlet replicates to use in order to determine confidence or credible intervals, respectively. Default value is set to 1000.}
+numerical, indicating the number of bootstrap or Dirichlet replicates to use in order to determine confidence or credible intervals, respectively. Default value is set to 1000.}
   \item{seed}{
 logical, if \code{TRUE} random seed of the CI construction was set}
-  \item{inervall}{
-integer, if \code{strategy=="bootstrap"&&interval=="0"} bootstrap quantile method is used, if \code{strategy=="bootstrap"&&interval=="1"} bootstrap standard error method is used, if \code{strategy=="jackknife"&&interval=="0"} jackknife leave one out method is used, if \code{strategy=="jackknife"&&interval=="1"} jackknife pseudo value mehtod is used.}
+  \item{intervall}{
+integer, if \code{strategy=="bootstrap"&&intervall=="0"} bootstrap quantile method is used, if \code{strategy=="bootstrap"&&intervall=="1"} bootstrap standard error method is used, if \code{strategy=="jackknife"&&intervall=="1"} jackknife leave one out method is used, if \code{strategy=="jackknife"&&intervall=="0"} jackknife pseudo value mehtod is used.}
+  \item{mc}{
+  integer, number of Monte Carlo iterations for full bayesian estimator.
+  }
 }
 %%\details{
 %%  ~~ If necessary, more details than the description above ~~
@@ -76,16 +79,12 @@ Karsten Krug <\email{karsten\_krug@gmx.net}>, Jakub Fusiak <\email{fusiakjakub@g
 ## load sample HapMap data
 data(HapMap)
 
-##estimate LD between all SNP pairs with default values:
-res.all <- LD.all(HapMap_geno)
-
-## estimate LD measures Dprime, Q, r, OR, Y and HS between all SNP pairs with baysian plug 
-## in estimation of hapltype frequencies, dirichlet paramter as 0.5, 
-## Jackknife leave one out 95\%  confidence interval, weight paramter of the HS measure 4:
-res.all <- LD.all(data = HapMap_geno, code = c(0, 1, 2, 3), 
-LD = c("Dprime", "Q", "r", "OR", "Y", "HS"), MAF = 0.1, paradigm = c("freq"), 
-strategy = c("jackknife"), verbose = TRUE, tol = .Machine$double.eps^0.6, 
-digits = 12, CI = TRUE, HSweight = 4, alpha = 0.05, inervall = 0)
+## estimate LD measures Dprime, Q, r, OR, Y and HS between all SNP pairs:
+#res.all <- LD.all(data = HapMap_geno, code = c(0, 1, 2, 3), 
+#LD = c("Dprime", "Q", "r", "OR", "Y", "HS"), MAF = 0.1, 
+#paradigm = c("freq"), strategy = c("jackknife"), verbose = TRUE, 
+#tol = .Machine$double.eps^0.6, digits = 12, CI = TRUE, HSweight = 4, 
+#alpha = 0.05, intervall = 0)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

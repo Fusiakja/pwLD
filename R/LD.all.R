@@ -1,5 +1,5 @@
 `LD.all` <-
-function(data,  code=c(0,1,2,3), LD=c("D", "Dprime", "Q", "r", "OR", "MI", "chi2", "Y", "HS"), MAF=0, paradigm=c("freq", "bayes", "fullbayes"), strategy = c("bootstrap", "jackknife","zapata"),dirich=rep(1,4),  verbose=T, tol=.Machine$double.eps^.6, digits=12, CI=F, HSweight=4, alpha=0.2, nSim=1000, seed=F, inervall=c(0,1))
+function(data,  code=c(0,1,2,3), LD=c("D", "Dprime", "Q", "r", "OR", "MI", "chi2", "Y", "HS"), MAF=0, paradigm=c("freq", "bayes", "fullbayes"), strategy = c("bootstrap", "jackknife"),dirich=rep(1,4),  verbose=T, tol=.Machine$double.eps^.6, digits=12, CI=F, HSweight=4, alpha=0.2, nSim=1000, seed=F, intervall=c(0,1), mc=1000)
 {
 	LD <- match.arg(LD, several.ok=T)
 
@@ -45,7 +45,7 @@ function(data,  code=c(0,1,2,3), LD=c("D", "Dprime", "Q", "r", "OR", "MI", "chi2
 	{
 	  set.seed(1)
 	}
-	res <- .C("LDall", data=as.character(as.vector(data)), nrow=as.integer(dim(data)[1]), ncol=as.integer(dim(data)[2]), LD=as.character(LD), LDnumb=as.integer(length(LD)), code=as.character(code), paradigm=as.character(paradigm), Dir=as.double(dirich), MAF=as.double(MAF), tol=as.double(tol), digits=as.integer(digits), LDmatPtr=as.double(rep(-5, length(LD)*(n*(n-1)/2))), HSweight=as.double(HSweight), ci=as.integer(ifci), mc=as.integer(1000), strategy=as.character(strategy), alpha=as.double(alpha), cilow=as.double(rep(-5, length(LD)*(n*(n-1)/2))), ciup=as.double(rep(-5, length(LD)*(n*(n-1)/2))), nSim=as.integer(nSim), LDdist=as.double(rep(-5, nSim)), PACKAGE="pwLD"  )
+	res <- .C("LDall", data=as.character(as.vector(data)), nrow=as.integer(dim(data)[1]), ncol=as.integer(dim(data)[2]), LD=as.character(LD), LDnumb=as.integer(length(LD)), code=as.character(code), paradigm=as.character(paradigm), Dir=as.double(dirich), MAF=as.double(MAF), tol=as.double(tol), digits=as.integer(digits), LDmatPtr=as.double(rep(-5, length(LD)*(n*(n-1)/2))), HSweight=as.double(HSweight), ci=as.integer(ifci), mc=as.integer(mc), strategy=as.character(strategy), alpha=as.double(alpha), cilow=as.double(rep(-5, length(LD)*(n*(n-1)/2))), ciup=as.double(rep(-5, length(LD)*(n*(n-1)/2))), nSim=as.integer(nSim), LDdist=as.double(rep(-5, nSim)),vars=as.double(1), intervall=as.integer(intervall),PACKAGE="pwLD"  )
 
 	if(CI==TRUE)
 	{

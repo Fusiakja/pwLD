@@ -1,5 +1,5 @@
 `kestConfidenceInterval` <-
-function(hapCounts, hapFreq, N, nSim= 1000, alpha=.05, LD="Dprime", tol=.Machine$double.eps^.6, digits=12, HSweight=4, strategy = "bootstrap", paradigm="freq", Dir=c(1,1,1,1), intervall=c(0,1))
+function(hapCounts, hapFreq, N, nSim= 1000, alpha=.05, LD="Dprime", tol=.Machine$double.eps^.6, digits=12, HSweight=4, strategy = "bootstrap", paradigm="freq", Dir=c(1,1,1,1), intervall=c(0,1), mc=1000)
 {	
 
   alpha=alpha
@@ -11,12 +11,12 @@ function(hapCounts, hapFreq, N, nSim= 1000, alpha=.05, LD="Dprime", tol=.Machine
   
   if(strategy=="bootstrap")
   {  
-    res <- .C("confidenceInterval", genoCounts=as.double(t(hapCounts)), genoFreq=as.double(t(hapFreq)), N=as.integer(N), paradigm=as.character(paradigm),nSim=as.integer(nSim), LD=as.character(LD), LDnumb=as.integer(length(LD)), tol=as.double(tol), digits=as.integer(digits), LDdist=as.double(numeric(length(LD) * nSim) ), HSweight=as.double(HSweight), alpha=as.double(alpha), strategy=as.character(strategy), cilow=as.double(rep(0,length(LD))), ciup=as.double(rep(0,length(LD))), tables=matrix(rep(0,nSim*4), nrow = 4, ncol = nSim,byrow = T),Dir=as.double(Dir),vars=as.double(rep(0,length(LD))),intervall=as.integer(intervall),PACKAGE="pwLD")
+    res <- .C("confidenceInterval", genoCounts=as.double(t(hapCounts)), genoFreq=as.double(t(hapFreq)), N=as.integer(N), paradigm=as.character(paradigm),nSim=as.integer(nSim), LD=as.character(LD), LDnumb=as.integer(length(LD)), tol=as.double(tol), digits=as.integer(digits), LDdist=as.double(numeric(length(LD) * nSim) ), HSweight=as.double(HSweight), alpha=as.double(alpha), strategy=as.character(strategy), cilow=as.double(rep(0,length(LD))), ciup=as.double(rep(0,length(LD))), tables=matrix(rep(0,nSim*4), nrow = 4, ncol = nSim,byrow = T),Dir=as.double(Dir),vars=as.double(rep(0,length(LD))),intervall=as.integer(intervall), mc=as.integer(mc),PACKAGE="pwLD")
   }  
   
   if(strategy=="jackknife")
   { 
-    res <- .C("confidenceInterval", genoCounts=as.double(t(hapCounts)), genoFreq=as.double(t(hapFreq)), N=as.integer(N), paradigm=as.character(paradigm),nSim=as.integer(nSim), LD=as.character(LD), LDnumb=as.integer(length(LD)), tol=as.double(tol), digits=as.integer(digits), LDdist=as.double(numeric(length(LD) * hapCounts[3,3]) ), HSweight=as.double(HSweight), alpha=as.double(alpha), strategy=as.character(strategy), cilow=as.double(rep(0,length(LD))), ciup=as.double(rep(0,length(LD))), tables=matrix(rep(0,nSim*4), nrow = 4, ncol = nSim,byrow = T),Dir=as.double(Dir), vars=as.double(rep(0,length(LD))),intervall=as.integer(intervall),PACKAGE="pwLD")
+    res <- .C("confidenceInterval", genoCounts=as.double(t(hapCounts)), genoFreq=as.double(t(hapFreq)), N=as.integer(N), paradigm=as.character(paradigm),nSim=as.integer(nSim), LD=as.character(LD), LDnumb=as.integer(length(LD)), tol=as.double(tol), digits=as.integer(digits), LDdist=as.double(numeric(length(LD) * hapCounts[3,3]) ), HSweight=as.double(HSweight), alpha=as.double(alpha), strategy=as.character(strategy), cilow=as.double(rep(0,length(LD))), ciup=as.double(rep(0,length(LD))), tables=matrix(rep(0,nSim*4), nrow = 4, ncol = nSim,byrow = T),Dir=as.double(Dir), vars=as.double(rep(0,length(LD))),intervall=as.integer(intervall), mc=as.integer(mc),PACKAGE="pwLD")
   }  
   # the distribution of the LD measures 
   LDdist <- matrix(res$LDdist, nrow=length(LD), byrow=T)

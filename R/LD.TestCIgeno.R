@@ -1,5 +1,5 @@
 `LD.TestCI_geno` <-
-  function(hapt ,snps, code=c(0,1,2,3), LD=c("Dprime", "Q", "r", "Y", "HS"), HSweight=4 , CI=T, strategy=c("jackknife","bootstrap", "zapata"), alpha=.05, n.sim=5000, returnLDdist=F, paradigm=c("freq", "bayes", "fullbayes"), dirich=rep(1,9) , all.solutions=F, tol=.Machine$double.eps^.6, digits=12, seed=F, mc=100000, counts=matrix(0, nrow=4, ncol=4, byrow=T), Ns=100, gen_hap=c("geno","hap"), intervall=c(0,1))
+  function(hapt ,snps, code=c(0,1,2,3), LD=c("Dprime", "Q", "r", "Y", "HS"), HSweight=4 , CI=T, strategy=c("jackknife","bootstrap", "zapata"), alpha=.05, n.sim=5000, returnLDdist=F, paradigm=c("freq", "bayes", "fullbayes"), dirich=rep(1,9) , all.solutions=F, tol=.Machine$double.eps^.6, digits=12, seed=F, mc=1000, counts=matrix(0, nrow=4, ncol=4, byrow=T), Ns=100, gen_hap=c("geno","hap"), intervall=c(0,1))
   {
     paradigm <- match.arg(paradigm)
     
@@ -98,13 +98,9 @@
         set.seed(1)
       }
       #if(paradigm == "freq")
-      if(gen_hap=="hap")
+      if(gen_hap=="geno")
       {      
-        ci.res <- estConfidenceInterval(hapCounts = hapCounts, hapFreq = hapFreq, N=Neff, paradigm = paradigm,nSim= n.sim, LD=LD,  tol=tol , alpha=alpha, digits=digits, strategy=strategy, Dir=dirich, intervall=intervall)
-      }
-      else
-      {
-        ci.res <- kestConfidenceInterval(hapCounts = genotypes.counts, hapFreq = genotypes.freqs, N=Neff, paradigm = paradigm,nSim= n.sim, LD=LD,  tol=tol , alpha=alpha, digits=digits, strategy=strategy, Dir=dirich, intervall=intervall)
+        ci.res <- estConfidenceInterval(hapCounts = genotypes.counts, hapFreq = genotypes.freqs, N=Neff, paradigm = paradigm,nSim= n.sim, LD=LD,  tol=tol , alpha=alpha, digits=digits, strategy=strategy, Dir=dirich, intervall=intervall, mc=mc)
       }
       #if(paradigm == "bayes" || paradigm == "fullbayes")
       #ci.res <- estCredibleInterval(hapCounts, nSim=n.sim, LD=LD, Dir=dirich, tol=tol, alpha=alpha, digits=digits)

@@ -1,5 +1,5 @@
 `LD.cardano` <-
-function( snps, code=c(0,1,2,3), LD=c("Dprime", "Q", "r", "Y", "HS"), HSweight=4 , CI=T, strategy=c("jackknife", "bootstrap", "zapata"), alpha=.05, n.sim=5000, returnLDdist=F, paradigm=c("freq", "bayes", "fullbayes"), dirich=rep(1,9) , all.solutions=F, tol=.Machine$double.eps^.6, digits=12, seed=F, mc=1000, intervall=c(0,1))
+function( snps, code=c(0,1,2,3), LD=c("Dprime", "Q", "r", "Y", "HS"), HSweight=4 , CI=T, strategy=c("jackknife", "bootstrap"), alpha=.05, n.sim=1000, returnLDdist=F, paradigm=c("freq", "bayes", "fullbayes"), dirich=rep(1,9) , all.solutions=F, tol=.Machine$double.eps^.6, digits=12, seed=F, mc=1000, intervall=c(0,1))
 {
 	paradigm <- match.arg(paradigm)
 					
@@ -56,8 +56,7 @@ function( snps, code=c(0,1,2,3), LD=c("Dprime", "Q", "r", "Y", "HS"), HSweight=4
 	  {
 	    set.seed(1)
 	  }
-	  ci.res <- estConfidenceInterval(hapCounts = genotypes.counts, hapFreq = genotypes.freqs, N=Neff, paradigm = paradigm,nSim= n.sim, LD=LD,  tol=tol , alpha=alpha, digits=digits, strategy=strategy, Dir=dirich, intervall=intervall)
-	  #ci.res <- estConfidenceInterval(hapCounts = hapCounts, hapFreq = hapFreq, N=Neff, paradigm = paradigm,nSim= n.sim, LD=LD,  tol=tol , alpha=alpha, digits=digits, strategy=strategy, Dir=dirich, intervall=intervall,HSweight = HSweight)
+	  ci.res <- estConfidenceInterval(hapCounts = genotypes.counts, hapFreq = genotypes.freqs, N=Neff, paradigm = paradigm,nSim= n.sim, LD=LD,  tol=tol , alpha=alpha, digits=digits, strategy=strategy, Dir=dirich, intervall=intervall, mc=mc)
   }
 
 

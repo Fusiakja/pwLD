@@ -8,8 +8,8 @@ Estimation of pairwise haplotype frequencies and linkage disequilibrium measures
 \code{LD.cardano} determines the fix-point of the EM algorithm analytically in order to infer double heterozygote haplotype frequencies.}
 \usage{
 LD.cardano(snps, code = c(0, 1, 2, 3), LD = c("Dprime", "Q", "r", "Y", "HS"), 
-HSweight = 4, CI = T, strategy = c("jackknife", "bootstrap", "zapata"), 
-alpha = 0.05, n.sim = 5000, returnLDdist = F, paradigm = c("freq", "bayes", "fullbayes"),
+HSweight = 4, CI = T, strategy = c("jackknife", "bootstrap"), 
+alpha = 0.05, n.sim = 1000, returnLDdist = F, paradigm = c("freq", "bayes", "fullbayes"),
 dirich = rep(1, 9), all.solutions = F, tol = .Machine$double.eps^0.6, 
 digits = 12, seed = F, mc = 1000, intervall = c(0, 1))
 }
@@ -24,13 +24,13 @@ character vector indicating the LD measures to estimate. See \_Details\_ below.}
   \item{HSweight}{
 numeric, parameter n of the HS measure for up-and downweighting}
   \item{CI}{
-logical, if \code{TRUE} either a frequentistic confidence interval or a Bayesian credible interval is estimated, depending on parameter \code{paradigm}.}
+logical, if \code{TRUE} either a frequentistic confidence intervall or a Bayesian credible intervall is estimated, depending on parameter \code{paradigm}.}
   \item{strategy}{
-haracter, if \code{bootstrap} a bootstrap confidence interval is constructed, if \code{jackknife} a jackknife confidence interval is constructed}
+haracter, if \code{bootstrap} a bootstrap confidence intervall is constructed, if \code{jackknife} a jackknife confidence intervall is constructed}
   \item{alpha}{
-numerical, confidence level of confidence or credible interval, respectively.}
+numerical, confidence level of confidence or credible intervall, respectively.}
   \item{n.sim}{
-numerical indicating the number of bootstrap or Dirichlet replicates to use in order to determine confidence or credible intervals, respectively. Default value is set to 5000.}
+numerical indicating the number of bootstrap or Dirichlet replicates to use in order to determine confidence or credible intervalls, respectively. Default value is set to 5000.}
   \item{returnLDdist}{
 logical, if \code{TRUE} the distribution of each LD measure over \code{n.sim} simulations is returned.}
   \item{paradigm}{
@@ -48,7 +48,7 @@ logical, if \code{TRUE} random seed of the CI construction was set}
   \item{mc}{
 numberic, numbers of iterations of the monte carlo simulation for the full bayesian haplotype frequency estimator}
   \item{intervall}{
-integer, if \code{strategy=="bootstrap"&&interval=="0"} bootstrap quantile method is used, if \code{strategy=="bootstrap"&&interval=="1"} bootstrap standard error method is used, if \code{strategy=="jackknife"&&interval=="0"} jackknife leave one out method is used, if \code{strategy=="jackknife"&&interval=="1"} jackknife pseudo value mehtod is used}
+integer, if \code{strategy=="bootstrap"&&intervall=="0"} bootstrap quantile method is used, if \code{strategy=="bootstrap"&&intervall=="1"} bootstrap standard error method is used, if \code{strategy=="jackknife"&&intervall=="1"} jackknife leave one out method is used, if \code{strategy=="jackknife"&&intervall=="0"} jackknife pseudo value mehtod is used}
 }
 %%\details{
 %%  ~~ If necessary, more details than the description above ~~
@@ -72,7 +72,7 @@ If the paramter:
 If \code{CI} ist \code{FALSE} a list containing haplotype frequencies, chi square value, number of genotype counts, number of double heterozygotes, names of the SNPs LD is measured between and the defined LD measrues
 If \code{CI} a list containing haplotype frequencies, chi square value, number of genotype counts, number of double heterozygotes, names of the SNPs LD is measured between and the defined LD measrues, CIs for the LD measures with the wanted CI method
 If \code{all.solutions} is \code{TRUE} the solutions of maximizing the likelihood of the data is printed out too.
-If \code{LDdist} a list of tables of used by the Bootstrap/Jackknife confidence interval estimation and the LD measrues for these tables are printed out too.
+If \code{LDdist} a list of tables of used by the Bootstrap/Jackknife confidence intervall estimation and the LD measrues for these tables are printed out too.
 }
 \references{
 Further informations and documentation can be found on \href{https://github.com/Fusiakja/pwLD}{github} }
@@ -91,17 +91,17 @@ Karsten Krug <\email{karsten\_krug@gmx.net}>, Jakub Fusiak <\email{fusiakjakub@g
 ## load sample HapMap data
 data(HapMap)
 
-##Calculation of pairwise LD measures with default values, no conifidence interval
-##res.ci <- LD.cardano(snps=HapMap_geno[c(4,5), ], LD=c("Dprime","Q","r","Y","HS"), 
-##paradigm="bayes", CI=FALSE,strategy = "bootstrap", 
-##intervall = 1,alpha = 0.05,HSweight = 4,returnLDdist = FALSE,
-##mc = 1000,seed = FALSE,all.solutions = FALSE ,n.sim = 1000)
+##Calculation of pairwise LD measures with default values, no conifidence intervall
+res.ci <- LD.cardano(snps=HapMap_geno[c(4,5), ], LD=c("Dprime"), 
+paradigm="bayes", CI=FALSE,strategy = "bootstrap", 
+intervall = 1,alpha = 0.05,HSweight = 4,returnLDdist = FALSE,
+mc = 1000,seed = FALSE,all.solutions = FALSE ,n.sim = 10)
 
 ##Calculation of pairwise LD measures D', Q, r, Y and HS with the bayesian plug in estimator
-##res.ci <- LD.cardano(snps=HapMap_geno[c(4,5), ], LD=c("Dprime","Q","r","Y","HS"), 
-##paradigm="bayes", CI=TRUE,strategy = "bootstrap", 
-##intervall = 1,alpha = 0.05,HSweight = 4,returnLDdist = FALSE,
-##mc = 1000,seed = FALSE,all.solutions = FALSE ,n.sim = 1000)
+res.ci <- LD.cardano(snps=HapMap_geno[c(4,5), ], LD=c("Dprime"), 
+paradigm="bayes", CI=TRUE,strategy = "bootstrap", 
+intervall = 1,alpha = 0.05,HSweight = 4,returnLDdist = FALSE,
+mc = 1000,seed = FALSE,all.solutions = FALSE ,n.sim = 10)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

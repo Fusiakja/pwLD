@@ -9,33 +9,34 @@ Graphical output of a correlation matrix consists of the LD measures between all
 \usage{
 LD.corrplot(valuematrix, values = c("values", "upperCI", "lowerCI"), 
 LD = c("D", "Dprime", "Q", "r", "OR", "MI", "chi2", "Y", "HS"), 
-snp.zoom = FALSE, snp.target, snp.region)
+snp.zoom = FALSE, snp.target, snp.region, corr.labels=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{valuematrix}{output of the \code{LD.all} command - 
+  \item{valuematrix}{object, output of the \code{LD.all} command - 
 symmatric matrix of the LD measure between all genotyped SNPs.}
   \item{values}{
-Parameter to define wich values shoul be plotted.
+object, parameter to define wich values shoul be plotted.
 If \code{vales} is \code{"values"} the LD values are taken for the plotting.
 If \code{values} is \code{"upperCI"} the upper bounds of the confidence interval estimation are taken for the plotting.
 If \code{values} is \code{"lowerCI"} the lower bounds of the confidence interval estimation are taken for the plotting.}
   \item{LD}{
-Defines which LD measure will be plotted}
+character, defines which LD measure will be plotted}
   \item{snp.zoom}{
 logical, if \code{FALSE} all data will be plotted
 if \code{TRUE} only part of the data will be plotted}
   \item{snp.target}{
-Definition of the SNP, that is wanted to be investigated, e.g. "rs16984366"}
+character, definition of the SNP, that is wanted to be investigated, e.g. "rs16984366"}
   \item{snp.region}{
-Definition of the region of the SNP, that is wanted to be investigated, e.g. 5 SNPs before and after the "rs16984366" SNP}
+integer, definition of the region of the SNP, that is wanted to be investigated, e.g. 5 SNPs before and after the "rs16984366" SNP}
+  \item{corr.labels}{
+  logical, show labels? \code{TRUE} Yes. \code{FALSE} No.
+  }
 }
 %%\details{
 %%  ~~ If necessary, more details than the description above ~~
 %%}
-\value{
-Output is a correlation matrix plot
-}
+\value{Output is a correlation matrix plot.}
 \references{
 Further informations and documentation can be found on \href{https://github.com/Fusiakja/pwLD}{github} }
 \author{
@@ -56,7 +57,7 @@ res.all <- LD.all(data = HapMap_geno, code = c(0, 1, 2, 3),
 LD = c("Dprime", "Q", "r", "OR", "Y", "HS"), MAF = 0.1, 
 paradigm = c("freq"), strategy = c("jackknife"), verbose = TRUE, 
 tol = .Machine$double.eps^0.6, digits = 12, CI = TRUE, HSweight = 4, 
-alpha = 0.05, inervall = 0)
+alpha = 0.05, intervall = 0)
 
 ##Plotting correlation matrix of D' without zoom
 LD.corrplot(res.all, values = c("values"), LD = c("Dprime"), snp.zoom = FALSE)
